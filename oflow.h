@@ -4,8 +4,12 @@
 #ifndef OFC_HEADER
 #define OFC_HEADER
 
+#include <Eigen/Dense>
+#include <opencv2/opencv.hpp> // needed for verbosity >= 3, DISVISUAL
+
 using std::cout;
 using std::endl;
+
 
 namespace OFC
 {
@@ -26,6 +30,8 @@ typedef struct
   float sc_fct;             // scaling factor at current scale  
   int curr_lv;              // current level
   int camlr;                // 0: left camera, 1: right camera, used only for depth, to restrict sideways patch motion
+  float cx;
+  float cy;
 } camparam ;
 
 typedef struct
@@ -113,7 +119,7 @@ public:
 private:
 
   // needed for verbosity >= 3, DISVISUAL
-  //void DisplayDrawPatchBoundary(cv::Mat img, const Eigen::Vector2f pt, const float sc);
+  void DisplayDrawPatchBoundary(cv::Mat img, const Eigen::Vector2f pt, const float sc);
 
   const float ** im_ao, ** im_ao_dx, ** im_ao_dy;
   const float ** im_bo, ** im_bo_dx, ** im_bo_dy;

@@ -10,9 +10,9 @@
 #include <Eigen/LU>
 #include <Eigen/Dense>
 
-// #include <opencv2/core/core.hpp> // needed for verbosity >= 3, DISVISUAL
-// #include <opencv2/highgui/highgui.hpp> // needed for verbosity >= 3, DISVISUAL
-// #include <opencv2/imgproc/imgproc.hpp> // needed for verbosity >= 3, DISVISUAL
+#include <opencv2/core/core.hpp> // needed for verbosity >= 3, DISVISUAL
+#include <opencv2/highgui/highgui.hpp> // needed for verbosity >= 3, DISVISUAL
+#include <opencv2/imgproc/imgproc.hpp> // needed for verbosity >= 3, DISVISUAL
 
 #include <sys/time.h>    // timeof day
 #include <stdio.h>  
@@ -151,6 +151,8 @@ namespace OFC
     cpl[i].tmp_h = cpl[i].height+ 2*imgpadding_in;
     cpl[i].curr_lv = sl;
     cpl[i].camlr = 0;
+    cpl[i].cx = cpl[i].width/2;
+    cpl[i].cy = cpl[i].height/2;
 
     
     cpr[i] = cpl[i];
@@ -234,18 +236,18 @@ namespace OFC
     if (op.usefbcon)
       grid_bw[ii]->Optimize();
       
-//     if (op.verbosity==4) // needed for verbosity >= 3, DISVISUAL
-//     {
-//       grid_fw[ii]->OptimizeAndVisualize(pow(2, sl));
-//       if (op.usefbcon)
-//         grid_bw[ii]->Optimize();
-//     }
-//     else
-//     {
-//       grid_fw[ii]->Optimize();
-//       if (op.usefbcon)
-//         grid_bw[ii]->Optimize();
-//     }
+    if (op.verbosity==4) // needed for verbosity >= 3, DISVISUAL
+    {
+      grid_fw[ii]->OptimizeAndVisualize(pow(2, sl));
+      if (op.usefbcon)
+        grid_bw[ii]->Optimize();
+    }
+    else
+    {
+      grid_fw[ii]->Optimize();
+      if (op.usefbcon)
+        grid_bw[ii]->Optimize();
+    }
 
     
     // Timing, DIS
@@ -304,35 +306,35 @@ namespace OFC
     }
                                                                 
 
-//     if (op.verbosity==3) // Display displacement result of this scale // needed for verbosity >= 3, DISVISUAL
-//     {
-//       // Display Grid on current scale
-//       float sc_fct_tmp = pow(2, sl); // upscale factor
-// 
-//       cv::Mat src(cpl[ii].height+2*cpl[ii].imgpadding, cpl[ii].width+2*cpl[ii].imgpadding, CV_32FC1, (void*) im_ao[sl]);  
-//       cv::Mat img_ao_mat = src(cv::Rect(cpl[ii].imgpadding, cpl[ii].imgpadding, cpl[ii].width, cpl[ii].height));
-// 
-//       cv::Mat outimg;
-//       img_ao_mat.convertTo(outimg, CV_8UC1);
-//       cv::cvtColor(outimg, outimg, CV_GRAY2RGB);
-//       cv::resize(outimg, outimg, cv::Size(), sc_fct_tmp, sc_fct_tmp, cv::INTER_NEAREST);
-//       for (int i = 0; i < grid_fw[ii]->GetNoPatches() ; ++i)
-//         DisplayDrawPatchBoundary(outimg, grid_fw[ii]->GetRefPatchPos(i), sc_fct_tmp);
-//                           
-//       for (int i = 0; i < grid_fw[ii]->GetNoPatches(); ++i)
-//       {
-//         // Show displacement vector
-//         const Eigen::Vector2f pt_ref = grid_fw[ii]->GetRefPatchPos(i);
-//         const Eigen::Vector2f pt_ret = grid_fw[ii]->GetQuePatchPos(i);
-// 
-//         Eigen::Vector2f pta, ptb;
-//         cv::line(outimg, cv::Point( (pt_ref[0]+.5)*sc_fct_tmp, (pt_ref[1]+.5)*sc_fct_tmp ), cv::Point( (pt_ret[0]+.5)*sc_fct_tmp, (pt_ret[1]+.5)*sc_fct_tmp ), cv::Scalar(0,255,0),  2);
-//       }
-//       cv::namedWindow( "Img_ao", cv::WINDOW_AUTOSIZE );
-//       cv::imshow( "Img_ao", outimg);
-//       
-//       cv::waitKey(0);
-//     }
+    if (op.verbosity==3) // Display displacement result of this scale // needed for verbosity >= 3, DISVISUAL
+    {
+      // Display Grid on current scale
+      float sc_fct_tmp = pow(2, sl); // upscale factor
+
+      cv::Mat src(cpl[ii].height+2*cpl[ii].imgpadding, cpl[ii].width+2*cpl[ii].imgpadding, CV_32FC1, (void*) im_ao[sl]);  
+      cv::Mat img_ao_mat = src(cv::Rect(cpl[ii].imgpadding, cpl[ii].imgpadding, cpl[ii].width, cpl[ii].height));
+
+      cv::Mat outimg;
+      img_ao_mat.convertTo(outimg, CV_8UC1);
+      cv::cvtColor(outimg, outimg, CV_GRAY2RGB);
+      cv::resize(outimg, outimg, cv::Size(), sc_fct_tmp, sc_fct_tmp, cv::INTER_NEAREST);
+      for (int i = 0; i < grid_fw[ii]->GetNoPatches() ; ++i)
+        DisplayDrawPatchBoundary(outimg, grid_fw[ii]->GetRefPatchPos(i), sc_fct_tmp);
+                          
+      for (int i = 0; i < grid_fw[ii]->GetNoPatches(); ++i)
+      {
+        // Show displacement vector
+        const Eigen::Vector2f pt_ref = grid_fw[ii]->GetRefPatchPos(i);
+        const Eigen::Vector2f pt_ret = grid_fw[ii]->GetQuePatchPos(i);
+
+        Eigen::Vector2f pta, ptb;
+        cv::line(outimg, cv::Point( (pt_ref[0]+.5)*sc_fct_tmp, (pt_ref[1]+.5)*sc_fct_tmp ), cv::Point( (pt_ret[0]+.5)*sc_fct_tmp, (pt_ret[1]+.5)*sc_fct_tmp ), cv::Scalar(0,255,0),  2);
+      }
+      cv::namedWindow( "Img_ao", cv::WINDOW_AUTOSIZE );
+      cv::imshow( "Img_ao", outimg);
+      
+      cv::waitKey(0);
+    }
                                                               
   }
   
@@ -362,19 +364,19 @@ namespace OFC
   
 }
 
-// // needed for verbosity >= 3, DISVISUAL
-// void OFClass::DisplayDrawPatchBoundary(cv::Mat img, const Eigen::Vector2f pt, const float sc) 
-// {
-//   cv::line(img, cv::Point( (pt[0]+.5)*sc, (pt[1]+.5)*sc ), cv::Point( (pt[0]+.5)*sc, (pt[1]+.5)*sc ), cv::Scalar(0,0,255),  4);
-//   
-//   float lb = -op.p_samp_s/2;
-//   float ub = op.p_samp_s/2-1;     
-//   
-//   cv::line(img, cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Scalar(0,0,255),  1);
-//   cv::line(img, cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Scalar(0,0,255),  1);
-//   cv::line(img, cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Scalar(0,0,255),  1);
-//   cv::line(img, cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Scalar(0,0,255),  1);
-// }
+// needed for verbosity >= 3, DISVISUAL
+void OFClass::DisplayDrawPatchBoundary(cv::Mat img, const Eigen::Vector2f pt, const float sc) 
+{
+  cv::line(img, cv::Point( (pt[0]+.5)*sc, (pt[1]+.5)*sc ), cv::Point( (pt[0]+.5)*sc, (pt[1]+.5)*sc ), cv::Scalar(0,0,255),  4);
+  
+  float lb = -op.p_samp_s/2;
+  float ub = op.p_samp_s/2-1;     
+  
+  cv::line(img, cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Scalar(0,0,255),  1);
+  cv::line(img, cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Scalar(0,0,255),  1);
+  cv::line(img, cv::Point( ((pt[0]+ub)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Scalar(0,0,255),  1);
+  cv::line(img, cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+ub)+.5)*sc ), cv::Point( ((pt[0]+lb)+.5)*sc, ((pt[1]+lb)+.5)*sc ), cv::Scalar(0,0,255),  1);
+}
 
 }
 

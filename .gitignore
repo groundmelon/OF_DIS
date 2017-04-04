@@ -1,0 +1,5 @@
+*.flo
+*.png
+*.jpg
+*.ppm
+build/

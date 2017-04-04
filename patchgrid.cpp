@@ -1,7 +1,7 @@
 
-// #include <opencv2/core/core.hpp> // needed for verbosity >= 3, DISVISUAL
-// #include <opencv2/highgui/highgui.hpp> // needed for verbosity >= 3, DISVISUAL
-// #include <opencv2/imgproc/imgproc.hpp> // needed for verbosity >= 3, DISVISUAL
+#include <opencv2/core/core.hpp> // needed for verbosity >= 3, DISVISUAL
+#include <opencv2/highgui/highgui.hpp> // needed for verbosity >= 3, DISVISUAL
+#include <opencv2/imgproc/imgproc.hpp> // needed for verbosity >= 3, DISVISUAL
 
 #include <iostream>
 #include <string>
@@ -140,57 +140,57 @@ void PatGridClass::Optimize()
     }
 }  
 
-// void PatGridClass::OptimizeAndVisualize(const float sc_fct_tmp) // needed for verbosity >= 3, DISVISUAL
-// {
-//   bool allconverged=0;
-//   int cnt = 0;
-//   while (!allconverged)
-//   {
-//     cnt++;
-// 
-//     allconverged=1;
-// 
-//     for (int i = 0; i < nopatches; ++i)
-//     {
-//       if (pat[i]->isConverged()==0)
-//       {
-//         pat[i]->OptimizeIter(p_init[i], false); // optimize, only one iterations
-//         allconverged=0;
-//       }
-//     }
-//     
-// 
-//     // Display original image
-//     const cv::Mat src(cpt->height+2*cpt->imgpadding, cpt->width+2*cpt->imgpadding, CV_32FC1, (void*) im_ao);  
-//     cv::Mat img_ao_mat = src(cv::Rect(cpt->imgpadding,cpt->imgpadding,cpt->width,cpt->height));
-//     cv::Mat outimg;
-//     img_ao_mat.convertTo(outimg, CV_8UC1);
-//     cv::cvtColor(outimg, outimg, CV_GRAY2RGB);
-//     cv::resize(outimg, outimg, cv::Size(), sc_fct_tmp, sc_fct_tmp, cv::INTER_NEAREST);
-// 
-//     for (int i = 0; i < nopatches; ++i)
-//     {
-//       // Show displacement vector
-//       const Eigen::Vector2f pt_ret = pat[i]->GetPointPos();
-//       
-//       Eigen::Vector2f pta, ptb;
-//       
-//       cv::line(outimg, cv::Point( (pt_ref[i][0]+.5)*sc_fct_tmp, (pt_ref[i][1]+.5)*sc_fct_tmp ), cv::Point( (pt_ret[0]+.5)*sc_fct_tmp, (pt_ret[1]+.5)*sc_fct_tmp ), cv::Scalar(255*pat[i]->isConverged() ,255*(!pat[i]->isConverged()),0),  2);
-//       
-//       cv::line(outimg, cv::Point( (cpt->cx+.5)*sc_fct_tmp, (cpt->cy+.5)*sc_fct_tmp ), cv::Point( (cpt->cx+.5)*sc_fct_tmp, (cpt->cy+.5)*sc_fct_tmp ), cv::Scalar(0,0, 255),  2);
-// 
-//     }
-// 
-//     char str[200];
-//     sprintf(str,"Iter: %i",cnt);
-//     cv::putText(outimg, str, cv::Point2f(20,20), cv::FONT_HERSHEY_PLAIN, 1,  cv::Scalar(0,0,255,255), 2);
-// 
-//     cv::namedWindow( "Img_iter", cv::WINDOW_AUTOSIZE );
-//     cv::imshow( "Img_iter", outimg);
-//     
-//     cv::waitKey(500);
-//   }
-// } 
+void PatGridClass::OptimizeAndVisualize(const float sc_fct_tmp) // needed for verbosity >= 3, DISVISUAL
+{
+  bool allconverged=0;
+  int cnt = 0;
+  while (!allconverged)
+  {
+    cnt++;
+
+    allconverged=1;
+
+    for (int i = 0; i < nopatches; ++i)
+    {
+      if (pat[i]->isConverged()==0)
+      {
+        pat[i]->OptimizeIter(p_init[i], false); // optimize, only one iterations
+        allconverged=0;
+      }
+    }
+    
+
+    // Display original image
+    const cv::Mat src(cpt->height+2*cpt->imgpadding, cpt->width+2*cpt->imgpadding, CV_32FC1, (void*) im_ao);  
+    cv::Mat img_ao_mat = src(cv::Rect(cpt->imgpadding,cpt->imgpadding,cpt->width,cpt->height));
+    cv::Mat outimg;
+    img_ao_mat.convertTo(outimg, CV_8UC1);
+    cv::cvtColor(outimg, outimg, CV_GRAY2RGB);
+    cv::resize(outimg, outimg, cv::Size(), sc_fct_tmp, sc_fct_tmp, cv::INTER_NEAREST);
+
+    for (int i = 0; i < nopatches; ++i)
+    {
+      // Show displacement vector
+      const Eigen::Vector2f pt_ret = pat[i]->GetPointPos();
+      
+      Eigen::Vector2f pta, ptb;
+      
+      cv::line(outimg, cv::Point( (pt_ref[i][0]+.5)*sc_fct_tmp, (pt_ref[i][1]+.5)*sc_fct_tmp ), cv::Point( (pt_ret[0]+.5)*sc_fct_tmp, (pt_ret[1]+.5)*sc_fct_tmp ), cv::Scalar(255*pat[i]->isConverged() ,255*(!pat[i]->isConverged()),0),  2);
+      
+      cv::line(outimg, cv::Point( (cpt->cx+.5)*sc_fct_tmp, (cpt->cy+.5)*sc_fct_tmp ), cv::Point( (cpt->cx+.5)*sc_fct_tmp, (cpt->cy+.5)*sc_fct_tmp ), cv::Scalar(0,0, 255),  2);
+
+    }
+
+    char str[200];
+    sprintf(str,"Iter: %i",cnt);
+    cv::putText(outimg, str, cv::Point2f(20,20), cv::FONT_HERSHEY_PLAIN, 1,  cv::Scalar(0,0,255,255), 2);
+
+    cv::namedWindow( "Img_iter", cv::WINDOW_AUTOSIZE );
+    cv::imshow( "Img_iter", outimg);
+    
+    cv::waitKey(500);
+  }
+} 
 
 void PatGridClass::InitializeFromCoarserOF(const float * flow_prev)
 {

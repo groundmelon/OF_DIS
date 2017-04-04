@@ -228,7 +228,7 @@ int main( int argc, char** argv )
     usefbcon = 0; patnorm = 1; costfct = 0; 
     tv_alpha = 10.0; tv_gamma = 10.0; tv_delta = 5.0;
     tv_innerit = 1; tv_solverit = 3; tv_sor = 1.6;
-    verbosity = 2; // Default: Plot detailed timings
+    verbosity = 3; // Default: 2, Plot detailed timings
         
     int fratio = 5; // For automatic selection of coarsest scale: 1/fratio * width = maximum expected motion magnitude in image. Set lower to restrict search space.
     
