@@ -286,6 +286,8 @@ namespace OFC
     // Variational refinement, (Step 5 in Algorithm 1 of paper)
     if (op.usetvref)
     {
+      op.use_edge = (sl==op.sc_l);
+      printf("sl = %d op.sc_l = %d use_edge=%d\n", sl, op.sc_l, op.use_edge);
       OFC::VarRefClass varref_fw(im_ao[sl], im_ao_dx[sl], im_ao_dy[sl], 
                                 im_bo[sl], im_bo_dx[sl], im_bo_dy[sl]
                                 ,&(cpl[ii]), &(cpr[ii]), &op, tmp_ptr);

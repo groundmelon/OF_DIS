@@ -18,6 +18,15 @@ using std::cout;
 using std::endl;
 using std::vector;
 
+cv::Mat get_image_vis(const image_t * image) {
+  cv::Mat vis(image->height, image->stride, CV_32FC1, cv::Scalar(0.0));
+  for(int j = 0;j < image->height; ++j) {
+    for(int i = 0; i < image->stride; ++i) {
+      vis.at<float>(j,i) = image->c1[j * image->stride + i];
+    }
+  }
+  return vis;
+}
 
 namespace OFC
 {
@@ -36,6 +45,8 @@ namespace OFC
   tvparams.n_inner_iteration = op->tv_innerit * (cpt->curr_lv+1);
   tvparams.n_solver_iteration = op->tv_solverit;//5;
   tvparams.sor_omega = op->tv_sor;  
+
+  tvparams.use_edge = op->use_edge;
   
   tvparams.tmp_quarter_alpha = 0.25f*tvparams.alpha;
   tvparams.tmp_half_gamma_over3 = tvparams.gamma*0.5f/3.0f;
@@ -188,6 +199,16 @@ void VarRefClass::RefLevelOF(image_t *wx, image_t *wy, const color_image_t *im1,
     // initialize uu and vv
     memcpy(uu->c1,wx->c1,wx->stride*wx->height*sizeof(float));
     memcpy(vv->c1,wy->c1,wy->stride*wy->height*sizeof(float));
+
+    // LTB
+    image_t * edge_mask = image_new(width,height);
+    image_erase(edge_mask);
+    get_edge(edge_mask, Ix, Iy, 40.0f * 40.0f);
+
+    cv::Mat edgevis = get_image_vis(edge_mask);
+    cv::imshow("edge", edgevis);
+    cv::waitKey();
+
     // inner fixed point iterations
     for(i_inner_iteration = 0 ; i_inner_iteration < tvparams.n_inner_iteration ; i_inner_iteration++)
     {
@@ -195,15 +216,27 @@ void VarRefClass::RefLevelOF(image_t *wx, image_t *wy, const color_image_t *im1,
         compute_smoothness(smooth_horiz, smooth_vert, uu, vv, deriv_flow, tvparams.tmp_quarter_alpha );
         //compute_data_and_match(a11, a12, a22, b1, b2, mask, wx, wy, du, dv, uu, vv, Ix, Iy, Iz, Ixx, Ixy, Iyy, Ixz, Iyz, desc_weight, desc_flow_x, desc_flow_y, tvparams.tmp_half_delta_over3, tvparams.tmp_half_beta, tvparams.tmp_half_gamma_over3);
         compute_data(a11, a12, a22, b1, b2, mask, wx, wy, du, dv, uu, vv, Ix, Iy, Iz, Ixx, Ixy, Iyy, Ixz, Iyz, tvparams.tmp_half_delta_over3, tvparams.tmp_half_beta, tvparams.tmp_half_gamma_over3);
-        sub_laplacian(b1, wx, smooth_horiz, smooth_vert);
-        sub_laplacian(b2, wy, smooth_horiz, smooth_vert);
+        
+        if (tvparams.use_edge) {
+          // compute_data_edge(a11, a12, a22, b1, b2, mask, wx, wy, du, dv, uu, vv, Ix, Iy, Iz, Ixx, Ixy, Iyy, Ixz, Iyz, tvparams.tmp_half_delta_over3, tvparams.tmp_half_beta, tvparams.tmp_half_gamma_over3, edge_mask);
+          sub_laplacian_edge(b1, wx, smooth_horiz, smooth_vert, edge_mask);
+          sub_laplacian_edge(b2, wy, smooth_horiz, smooth_vert, edge_mask);
+        } else {
+          // compute_data(a11, a12, a22, b1, b2, mask, wx, wy, du, dv, uu, vv, Ix, Iy, Iz, Ixx, Ixy, Iyy, Ixz, Iyz, tvparams.tmp_half_delta_over3, tvparams.tmp_half_beta, tvparams.tmp_half_gamma_over3);
+          sub_laplacian(b1, wx, smooth_horiz, smooth_vert);
+          sub_laplacian(b2, wy, smooth_horiz, smooth_vert);
+        }
 
         // solve system
-        #ifdef WITH_OPENMP
-        sor_coupled_slow_but_readable(du, dv, a11, a12, a22, b1, b2, smooth_horiz, smooth_vert, tvparams.n_solver_iteration, tvparams.sor_omega); // slower but parallelized
-        #else
-        sor_coupled(du, dv, a11, a12, a22, b1, b2, smooth_horiz, smooth_vert, tvparams.n_solver_iteration, tvparams.sor_omega);
-        #endif
+        // #ifdef WITH_OPENMP
+        if (tvparams.use_edge) {
+          sor_coupled_slow_but_readable_edge(du, dv, a11, a12, a22, b1, b2, smooth_horiz, smooth_vert, tvparams.n_solver_iteration, tvparams.sor_omega, edge_mask); // slower but parallelized
+        } else {
+          sor_coupled_slow_but_readable(du, dv, a11, a12, a22, b1, b2, smooth_horiz, smooth_vert, tvparams.n_solver_iteration, tvparams.sor_omega); // slower but parallelized
+        }
+        // #else
+        // sor_coupled(du, dv, a11, a12, a22, b1, b2, smooth_horiz, smooth_vert, tvparams.n_solver_iteration, tvparams.sor_omega);
+        // #endif
         
         // update flow plus flow increment
         int i;
@@ -221,6 +254,7 @@ void VarRefClass::RefLevelOF(image_t *wx, image_t *wy, const color_image_t *im1,
     memcpy(wy->c1,vv->c1,vv->stride*vv->height*sizeof(float)); 
     
     // free memory
+    image_delete(edge_mask);
     image_delete(du); image_delete(dv);
     image_delete(mask);
     image_delete(smooth_horiz); image_delete(smooth_vert);

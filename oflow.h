@@ -56,6 +56,7 @@ typedef struct
   int tv_innerit;
   int tv_solverit;
   float tv_sor;         // Successive-over-relaxation weight
+  bool use_edge;
   
   // Automatically set parameters / fixed parameters
   int nop;                      // number of parameters per pixel, 1 for depth, 2 for optical flow, 4 for scene flow

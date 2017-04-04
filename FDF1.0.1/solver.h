@@ -12,6 +12,8 @@ void sor_coupled(image_t *du, image_t *dv, image_t *a11, image_t *a12, image_t *
 
 void sor_coupled_slow_but_readable(image_t *du, image_t *dv, image_t *a11, image_t *a12, image_t *a22, const image_t *b1, const image_t *b2, const image_t *dpsis_horiz, const image_t *dpsis_vert, const int iterations, const float omega);
 
+void sor_coupled_slow_but_readable_edge(image_t *du, image_t *dv, image_t *a11, image_t *a12, image_t *a22, const image_t *b1, const image_t *b2, const image_t *dpsis_horiz, const image_t *dpsis_vert, const int iterations, const float omega, const image_t * edge);
+
 void sor_coupled_slow_but_readable_DE(image_t *du, const image_t *a11, const image_t *b1, const image_t *dpsis_horiz, const image_t *dpsis_vert, const int iterations, const float omega);
 
 #ifdef __cplusplus

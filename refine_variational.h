@@ -26,6 +26,7 @@ typedef struct
   float tmp_half_gamma_over3;
   float tmp_half_delta_over3;
   float tmp_half_beta;
+  bool use_edge;
   
 } TVparams;  
         

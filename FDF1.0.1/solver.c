@@ -16,6 +16,72 @@ typedef __v4sf v4sf;
 //Perform n iterations of the sor_coupled algorithm
 //du and dv are used as initial guesses
 //The system form is the same as in opticalflow.c
+void sor_coupled_slow_but_readable_edge(image_t *du, image_t *dv, image_t *a11, image_t *a12, image_t *a22, const image_t *b1, const image_t *b2, const image_t *dpsis_horiz, const image_t *dpsis_vert, const int iterations, const float omega, const image_t* edge)
+{  
+    int i,j,iter;
+    for(iter = 0 ; iter<iterations ; iter++)
+    {
+    // #pragma omp parallel for
+    for(j=0 ; j<du->height ; j++)
+    {
+      float sigma_u,sigma_v,sum_dpsis,A11,A22,A12,B1,B2;//,det;
+      float w_edge, w_noedge;
+      for(i=0 ; i<du->width ; i++)
+      {
+          sigma_u = 0.0f;
+          sigma_v = 0.0f;
+          sum_dpsis = 0.0f;
+
+          // w_edge = edge->c1[j*du->stride+i];
+          if (edge->c1[j*du->stride+i] > 0.5f) {
+            w_edge = 1.0f;
+            w_noedge = 1.0f;
+          } else {
+            w_edge = 0.01f;
+            w_noedge = 1.0f;
+          }
+
+          if(j>0)
+          {
+            sigma_u -= dpsis_vert->c1[(j-1)*du->stride+i]*du->c1[(j-1)*du->stride+i] * w_noedge;
+            sigma_v -= dpsis_vert->c1[(j-1)*du->stride+i]*dv->c1[(j-1)*du->stride+i] * w_noedge;
+            sum_dpsis += dpsis_vert->c1[(j-1)*du->stride+i];
+          }
+          if(i>0)
+          {
+            sigma_u -= dpsis_horiz->c1[j*du->stride+i-1]*du->c1[j*du->stride+i-1] * w_noedge;
+            sigma_v -= dpsis_horiz->c1[j*du->stride+i-1]*dv->c1[j*du->stride+i-1] * w_noedge;
+            sum_dpsis += dpsis_horiz->c1[j*du->stride+i-1];
+          }
+          if(j<du->height-1)
+          {
+            sigma_u -= dpsis_vert->c1[j*du->stride+i]*du->c1[(j+1)*du->stride+i] * w_edge;
+            sigma_v -= dpsis_vert->c1[j*du->stride+i]*dv->c1[(j+1)*du->stride+i] * w_edge;
+            sum_dpsis += dpsis_vert->c1[j*du->stride+i];
+          }
+          if(i<du->width-1)
+          {
+            sigma_u -= dpsis_horiz->c1[j*du->stride+i]*du->c1[j*du->stride+i+1] * w_edge;
+            sigma_v -= dpsis_horiz->c1[j*du->stride+i]*dv->c1[j*du->stride+i+1] * w_edge;
+            sum_dpsis += dpsis_horiz->c1[j*du->stride+i];
+          }
+          A11 = a11->c1[j*du->stride+i]+sum_dpsis;
+          A12 = a12->c1[j*du->stride+i];
+          A22 = a22->c1[j*du->stride+i]+sum_dpsis;
+          //det = A11*A22-A12*A12;
+          B1 = b1->c1[j*du->stride+i]-sigma_u;
+          B2 = b2->c1[j*du->stride+i]-sigma_v;
+//           du->c1[j*du->stride+i] = (1.0f-omega)*du->c1[j*du->stride+i] +omega*( A22*B1-A12*B2)/det;
+//           dv->c1[j*du->stride+i] = (1.0f-omega)*dv->c1[j*du->stride+i] +omega*(-A12*B1+A11*B2)/det;
+          du->c1[j*du->stride+i] = (1.0f-omega)*du->c1[j*du->stride+i] + omega/A11 *(B1 - A12* dv->c1[j*du->stride+i] );
+          dv->c1[j*du->stride+i] = (1.0f-omega)*dv->c1[j*du->stride+i] + omega/A22 *(B2 - A12* du->c1[j*du->stride+i] );
+          
+          
+      }
+    }
+  }  
+}
+
 void sor_coupled_slow_but_readable(image_t *du, image_t *dv, image_t *a11, image_t *a12, image_t *a22, const image_t *b1, const image_t *b2, const image_t *dpsis_horiz, const image_t *dpsis_vert, const int iterations, const float omega)
 {  
     int i,j,iter;
